@@ -6,22 +6,47 @@ import {
   TextInput,
   Platform,
   StatusBar,
-  // ScrollView,
   FlatList,
+  Alert,
 } from "react-native";
 import { Button } from "./components/Button";
 import { SkillCard } from "./components/SkillCard";
 
+type SkillData = {
+  id: string;
+  name: string;
+};
+
 const App = () => {
-  const [skills, setSkills] = useState([]);
+  const [skills, setSkills] = useState<SkillData[]>([]);
   const [newSkill, setNewSkill] = useState("");
-  const [greeting, setGreeting] = useState("");
+  const [greeting, setGreeting] = useState<String>();
 
   function handleAddNewSkill() {
     if (newSkill) {
-      setSkills((prevState) => [...prevState, newSkill]);
+      const data = {
+        id: String(new Date().getTime()),
+        name: newSkill,
+      };
+
+      setSkills((oldState) => [...oldState, data]);
+
       setNewSkill("");
+
+      return;
     }
+
+    Alert.alert("Ops!", "Digite uma Skill para poder adicionar", [
+      { text: "OK", onPress: () => console.log("OK Pressed") },
+    ]);
+
+    return;
+  }
+
+  function handleRemoveSkill(id: string) {
+    const skillsFiltered = skills.filter((item) => item.id !== id);
+
+    setSkills(skillsFiltered);
   }
 
   useEffect(() => {
@@ -44,10 +69,9 @@ const App = () => {
           barStyle="light-content"
           backgroundColor="#E71562"
         />
-        
-        <Text style={styles.greeting}>{greeting}</Text>
 
         <Text style={styles.text}>Welcome, Darlan.</Text>
+        <Text style={styles.greeting}>{greeting}</Text>
 
         <TextInput
           style={styles.input}
@@ -61,16 +85,15 @@ const App = () => {
 
         <Text style={[styles.text, { marginVertical: 25 }]}>My Skills</Text>
 
-        {/* <ScrollView showsVerticalScrollIndicator={false}>
-          {skills.map((skill, index) => (
-            <SkillCard skill={skill} key={index} />
-          ))}
-        </ScrollView> */}
-
         <FlatList
           data={skills}
-          keyExtractor={(item, index) => index}
-          renderItem={({ item }) => <SkillCard skill={item} />}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <SkillCard
+              onPress={() => handleRemoveSkill(item.id)}
+              skill={item.name}
+            />
+          )}
           showsVerticalScrollIndicator={false}
         />
       </SafeAreaView>
@@ -98,7 +121,7 @@ const styles = StyleSheet.create({
     borderRadius: 7,
   },
   greeting: {
-    color: "#fff",
+    color: "#fa9cbe",
   },
 });
 
